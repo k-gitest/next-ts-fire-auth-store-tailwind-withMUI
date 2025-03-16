@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
+import {useState, useEffect} from 'react'
 import Link from 'next/link'
-import { useRouter, usePathname, useSearchParams } from "next/navigation"
+import { useRouter, usePathname , useSearchParams } from "next/navigation"
 import type { User } from "firebase/auth";
-import { Post } from 'types/post'
+import {Post} from 'types/post'
 import useSWRMutation from "swr/mutation";
 import Modal from 'components/Modal'
 import PostForm from 'components/Private/PostForm'
 import ListCard from 'components/ListCard'
 import { updatePostArticle, deletePostArticle } from 'lib/postStore'
-import { useGetList, postFetcher } from 'lib/useGetUserPostList'
+import {useGetList, postFetcher} from 'lib/useGetUserPostList'
 
 type Props = {
   user: User;
@@ -19,44 +19,34 @@ const defaultPostData = {
   release: '公開',
   category: '',
   article: '',
-}
+}                                     
 
 const PostList = (props: Props) => {
   const pathName = usePathname()
-  const { isLoading, isError, postList, setPostList } = useGetList(props.user.uid)
+  const {isLoading, isError, postList, setPostList} = useGetList(props.user.uid)
   const { data, trigger, isMutating } = useSWRMutation('/api/admin/post', postFetcher)
   const [isModal, setModal] = useState(false);
-  const [post, setPost] = useState<Post>(defaultPostData)
-  const modalFlag = () => { setModal(true); }
+  const modalFlag = () => {setModal(true);}
 
-  const handleEdit = async () => {
-    try {
-      await updatePostArticle(post)
+  const handleEdit = async(postData: Post) => {
+    try{
+      await updatePostArticle({ ...data, ...postData })
       setPostList()
       setModal(false)
     }
-    catch (err) {
+    catch(err){
       console.log(err)
     }
   }
-  const handleDelete = async (id: string | undefined) => {
-    try {
+  const handleDelete = async(id: string | undefined) => {
+    try{
       await deletePostArticle(id ?? '', props.user.uid)
       setPostList()
     }
-    catch (err) {
+    catch(err){
       console.log(err)
     }
   }
-  useEffect(() => {
-    if (data) {
-      if (Array.isArray(data)) {
-        setPost(data[0]);
-      } else {
-        setPost(data);
-      }
-    }
-  }, [data]);
 
   return (
     <div>
@@ -71,8 +61,8 @@ const PostList = (props: Props) => {
         postList.map(item => (
           <div key={item.pid} className="mb-2">
             <ListCard list={item}>
-              <button onClick={() => { trigger([props.user.uid ?? '', item.pid ?? '']); modalFlag(); }} className="bg-lime-500 hover:bg-lime-800 mr-2 p-3 rounded" >更新</button>
-              <button onClick={() => handleDelete(item.pid)} className="bg-red-500 hover:bg-red-800 p-3 rounded" >削除</button>
+              <button onClick={()=>{trigger([props.user.uid ?? '', item.pid ?? '']); modalFlag();}} className="bg-lime-500 hover:bg-lime-800 mr-2 p-3 rounded" >更新</button>
+              <button onClick={()=>handleDelete(item.pid)} className="bg-red-500 hover:bg-red-800 p-3 rounded" >削除</button>
             </ListCard>
           </div>
         ))
@@ -84,8 +74,11 @@ const PostList = (props: Props) => {
         {isMutating && (
           <p>Loading...</p>
         )}
-        {!isMutating && (
-          <PostForm props={{ post: post, setPost: setPost, onRegister: handleEdit }} />
+        {!isMutating && !data && (
+          <p>データがありません。</p>
+        )}
+        {!isMutating && data && (
+          <PostForm post={data} onRegister={handleEdit} />
         )}
       </Modal>
       <div>

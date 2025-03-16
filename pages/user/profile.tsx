@@ -1,13 +1,13 @@
-import {useState, useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation"
-import type {User} from 'types/user'
+import type { User } from 'types/user'
 import useSWR from 'swr'
 import UserForm from 'components/Private/UserForm'
-import {AuthUserContext} from 'components/provider/AuthProvider'
-import {createUserProfile, getUserProfile} from 'lib/userStore'
+import { AuthUserContext } from 'components/provider/AuthProvider'
+import { createUserProfile, getUserProfile } from 'lib/userStore'
 
-async function profileFetcher([url, id]: string[]){
-  return await getUserProfile( id )
+async function profileFetcher([url, id]: string[]) {
+  return await getUserProfile(id)
 }
 
 export const useGetUser = (uid: string | undefined) => {
@@ -16,7 +16,7 @@ export const useGetUser = (uid: string | undefined) => {
   const isError = error;
   const userProfile: User | null = data ? (data as User) : null;
   const setUserProfile = mutate;
-  return {isLoading, isError, userProfile, setUserProfile}
+  return { isLoading, isError, userProfile, setUserProfile }
 }
 
 const Profile = () => {
@@ -24,14 +24,6 @@ const Profile = () => {
   const router = useRouter()
   const { isLoading, isError, userProfile, setUserProfile } = useGetUser(authUser?.uid);
 
-  useEffect(() => {
-    if (userProfile && Object.keys(userProfile).length > 0) {
-      setUser(userProfile);
-    } else {
-      setUser(defaultUserData);
-    }
-  }, [userProfile]);
-  
   const defaultUserData = {
     name: '',
     address: '',
@@ -43,23 +35,21 @@ const Profile = () => {
     admin: false,
     age: 18,
   }
-  const [user, setUser] = useState<User>(defaultUserData) 
 
-  const handleRegister = async () => {
-    try{
+  const handleSubmit = async (data: User) => {
+    try {
       const uid = authUser ? authUser.uid : "";
-      const result = await createUserProfile( user, uid)
-      if(result){
-        setUser(user)
+      const result = await createUserProfile(data, uid)
+      if (result) {
         router.push('/user')
       }
     }
-    catch(err){
+    catch (err) {
       console.log(err)
     }
   }
-        
-  return(
+
+  return (
     <div>
       <h1>プロフィール</h1>
       {authUser && (
@@ -69,7 +59,10 @@ const Profile = () => {
             <p>Loading...</p>
           )}
           {userProfile && (
-            <UserForm props={{user:user, setUser: setUser, onRegister: handleRegister }} />
+            <UserForm user={userProfile} onRegister={handleSubmit} />
+          )}
+          {!userProfile && (
+            <p>プロフィールが見つかりませんでした。</p>
           )}
         </>
       )}
@@ -79,7 +72,7 @@ const Profile = () => {
         </>
       )}
       <div>
-        <button className="border p-3 rounded" onClick={()=>router.back()}>戻る</button >
+        <button className="border p-3 rounded" onClick={() => router.back()}>戻る</button >
       </div>
     </div>
   )

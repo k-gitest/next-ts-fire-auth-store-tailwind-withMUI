@@ -19,10 +19,9 @@ const CreatePost = () => {
   const [post, setPost] = useState<Post>(defaultPostData)
   const [error, setError] = useState('')
 
-  const handleRegister = async () => {
-
+  const handleRegister = async (data: Post) => {
     const uid = authUser ? authUser.uid : "";
-    const result = await createPostArticle(post, uid)
+    const result = await createPostArticle(data, uid)
     if(result){
       setPost(defaultPostData);
       router.push('/user');
@@ -36,7 +35,7 @@ const CreatePost = () => {
         <>
           <p>記事作成</p>
           {error && (<span className="text-red-500">{error}</span>)}
-          <PostForm props={{post:post, setPost: setPost, onRegister: handleRegister }} />
+          <PostForm post={post} onRegister={handleRegister} />
         </>
       )}
       {!authUser && (

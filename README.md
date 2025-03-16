@@ -1,12 +1,10 @@
 ## 目的
-next.jsでtailwindとMUIを同時に使用する技術選定の検証である。
+next.jsでtailwindとMUIを同時に使用する技術選定の検証  
+MUIは制御コンポーネント、RHF(React Hook Form)は非制御コンポーネントである為、制御／非制御の実装による再レンダリングを検証  
 
 ## app概要
-create-next-appで構築されたNext.jsとfirabaseのfirestoreとauthenticationを利用したCMSプロジェクトです。
-
-* ベーススタイルはtailwindで指定、フォームUIコンポーネントはMUIを使用
-
-[ベースappはコチラ](https://github.com/k-gitest/next-ts-fire-auth-store-cms-onClient)
+create-next-appで構築されたNext.jsとfirabaseのfirestoreとauthenticationを利用したプロジェクト。  
+CSSはTailWind、UIコンポーネントはMUI、form管理はRHF、バリデーションはZod、データフェッチはSWRを使用。
 
 ## 開発環境
 
@@ -16,8 +14,9 @@ create-next-appで構築されたNext.jsとfirabaseのfirestoreとauthentication
 * firebase-admin 11.9.0
 * tailwind 3.3.2
 * mui/material 5.13.5
-* swr 2.1.5
 * axios 1.4.0
+* swr 2.1.5
+* zod 3.21.4
 
 ## ディレクトリ構成
 
@@ -39,24 +38,27 @@ myapp...プロジェクトディレクトリ
   │     └── user ...会員向け画面
   ├── public ...画像ファイル
   ├── styles ...css設定ファイル
-  │     ├── globals.css ...グローバルCSS設定
-  │     └── twbase.css ...tailwindベースCSSファイル
   └── types ...型定義ファイル
 </pre>
 
-* フォームコンポーネントはMUIを使用するので作らない
+* components/AuthFormではMUIのTextFieldコンポーネントを使用してRHFのregisterと併用してフォームを実装している
+* components/Private/PostFormとUserFormではMUIのフォームコンポーネント各種を使用しRHFのControllerを併用してフォームを実装している
 
 ## 注意点
-
-tailwindがインストールされていてもMUIをインストールするとMUIのベーススタイルが適用されてしまう。何もせずtailwindでスタイル指定しても反映されない。
-
-併用する場合はstyles/globals.cssにtailwindのbaseCSSを読み込む必要がある。
-twbase.cssを作成しbaseCSSを書き込み、globals.cssでtwbase.cssをimportする事でtailwindが適用されるようになる。
+* tailwindがインストールされていてもMUIをインストールするとMUIのベーススタイルが適用されてしまう。
+* 併用する場合はstyles/globals.cssにtailwindのbaseCSSを読み込む必要がある。
+* twbase.cssを作成しbaseCSSを書き込み、globals.cssでtwbase.cssをimportする事でtailwindが適用されるようになる。
+* RHFはregisterを使用すると非制御であるが、MUIなどの外部UIコンポーネントを使用する場合はControlerを使用し制御コンポーネントとして扱う。
+* しかしMUIのTextFieldコンポーネントはregisterが使用でき非制御コンポーネントとして扱う事ができる。
 
 ## 結論
 
-MUIを使用する事でフォームパーツのコンポーネントを作る必要がなくなり、値の受渡しをMUIがすることによって登録画面コンポーネントのコードがすっきりし分かり易くなる。
+RHFのregisterを使用すれば再レンダリングが抑えられ表示パフォーマンスが抑えられる。MUIであってもTextFieldコンポーネントのみのフォームであれば非制御として扱う事ができパフォーマンスも期待できるので有用である。  
 
-UI機能をMUI、UIスタイルをtailwindと分ける事ができる。
+その一方でTextFieldコンポーネント以外だとControllerを使用しないと連携できず再レンダリングもしてしまう。  
+
+結論としては無理に制御／非制御を混在させるよりも、使用するフォームパーツによって統一した方が使いやすい。  
+
+UI機能をMUI、UIスタイルをtailwindと分ける事ができる。  
 
 next.jsではなくreactで併用する場合はMaterial Tailwindを使用した方が分かり易い。

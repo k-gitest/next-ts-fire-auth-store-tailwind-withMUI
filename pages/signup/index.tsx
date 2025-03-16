@@ -7,16 +7,12 @@ import AuthForm from 'components/AuthForm'
 
 const Signup = () => {
   const authUser = AuthUserContext()
-  
-  const defaultState = {email: '', password: ''}
-  const [account, setAccount] = useState<AuthUser>(defaultState)
   const router = useRouter()
   const [error, setError] = useState('')
 
-  const handleSubmit = async (event:React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleSubmit = async (data: AuthUser) => {
     setError('')
-    const result = await SignupSubmit(account.email, account.password)
+    const result = await SignupSubmit(data.email, data.password)
     if(result && result.success){
       router.push('/user')
     } else {
@@ -29,7 +25,7 @@ const Signup = () => {
       <h1 className="text-center mb-3">新規登録ページ</h1>
       {error && (<p className="text-center text-red-500">{error}</p>)}
       {!authUser && (
-        <AuthForm account={account} setAccount={setAccount} handleSubmit={handleSubmit} />
+        <AuthForm handleSubmit={handleSubmit} />
       )}
       {authUser && (
         (<>ログインしています</>)
